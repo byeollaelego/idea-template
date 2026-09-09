@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="별내스마트러닝센터 발명 아이디어 생성기 — 관심 키워드를 고르면 AI가 발명 아이디어를 단계적으로 제안합니다">
+<title>발명 아이디어 생성기 | 별내스마트러닝센터</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+
+:root{
+  --paper:#FBFAF5;
+  --paper-deep:#F2F0E6;
+  --line:#DEDACB;
+  --line-strong:#C6C0AC;
+  --ink:#1E2A22;
+  --ink-soft:#5B685D;
+  --brand:#2B6E63;
+  --brand-dark:#173F38;
+  --brand-tint:#E4EEEA;
+  --accent:#E29A3B;
+  --accent-tint:#FBEACB;
+  --danger:#B4432E;
+  --radius:3px;
+  --shadow:0 1px 0 rgba(30,42,34,.06);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Noto Sans KR',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.mono,.btn,.tag,.badge{font-family:'Space Grotesk','Noto Sans KR',sans-serif;}
+
+header.site{
+  background:var(--brand-dark);color:#F4F1E6;
+  padding:20px clamp(16px,4vw,48px) 24px;
+  border-bottom:6px solid var(--accent);
+}
+.wordmark{display:flex;align-items:center;gap:12px;margin-bottom:16px;justify-content:space-between;flex-wrap:wrap;}
+.wordmark .left{display:flex;align-items:center;gap:12px;}
+.wordmark .mark{
+  width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--brand-dark);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:2px solid #F4F1E6;
+}
+.wordmark .names{display:flex;flex-direction:column;line-height:1.25;}
+.wordmark .center-name{font-weight:600;font-size:13px;color:#DCE9E4;}
+.wordmark .lab-name{font-size:11px;color:#9FB8AF;}
+.wordmark a.back{color:#DCE9E4;font-size:12.5px;border:1px solid #3E6961;border-radius:99px;padding:6px 14px;text-decoration:none;}
+.wordmark a.back:hover{border-color:var(--accent);color:#fff;}
+header.site h1{margin:0 0 4px;font-size:clamp(20px,2.6vw,26px);font-weight:700;}
+header.site p.sub{margin:0;color:#BFD3CC;font-size:13.5px;}
+
+main{max-width:760px;margin:0 auto;padding:32px clamp(16px,4vw,32px) 90px;}
+.view{display:none;}
+.view.active{display:block;animation:fade .25s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.hero h2{font-size:clamp(24px,4vw,30px);margin:0 0 6px;line-height:1.3;}
+.hero h2 .accent-word{color:var(--brand);}
+.hero p{margin:0 0 26px;color:var(--ink-soft);font-size:14px;}
+
+.field-block{margin-bottom:26px;}
+.field-block > label{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;color:var(--brand-dark);margin-bottom:10px;}
+select#gradeSelect{
+  width:100%;padding:12px 14px;font-size:14px;border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:#fff;color:var(--ink);font-family:inherit;
+}
+.cat-hint{font-weight:400;color:var(--ink-soft);font-size:12.5px;}
+
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@media (max-width:540px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+.cat-card{
+  border:1px solid var(--line-strong);border-radius:var(--radius);background:#fff;
+  padding:14px 8px;text-align:center;cursor:pointer;user-select:none;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:border-color .15s ease, background .15s ease, transform .08s ease;
+}
+.cat-card .emoji{font-size:22px;}
+.cat-card span.label{font-size:12.5px;font-weight:600;color:var(--ink);}
+.cat-card:hover{border-color:var(--brand);}
+.cat-card.selected{background:var(--brand);border-color:var(--brand);}
+.cat-card.selected span.label{color:#fff;}
+.cat-card.selected .emoji{filter:brightness(1.1);}
+.cat-card:active{transform:translateY(1px);}
+.cat-card.disabled{opacity:.35;cursor:not-allowed;}
+
+input#customKeyword{
+  width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:var(--paper);font-family:inherit;
+}
+
+.notice{font-size:12.5px;color:var(--accent);background:var(--accent-tint);border:1px solid var(--accent);
+  border-radius:var(--radius);padding:8px 12px;margin-bottom:18px;display:none;}
+.notice.show{display:block;}
+
+.btn{
+  font-size:14px;font-weight:700;padding:13px 20px;border-radius:var(--radius);
+  border:1px solid var(--brand);background:var(--brand);color:#fff;cursor:pointer;width:100%;
+  transition:background .15s ease, opacity .15s ease;
+}
+.btn:hover{background:var(--brand-dark);}
+.btn:disabled{background:var(--line-strong);border-color:var(--line-strong);color:#8b8b7c;cursor:not-allowed;}
+.btn.ghost{background:#fff;color:var(--brand-dark);}
+.btn.ghost:hover{border-color:var(--brand);}
+.btn.small{width:auto;padding:9px 14px;font-size:12.5px;}
+
+.stepbar{display:flex;align-items:center;gap:6px;margin-bottom:24px;}
+.stepbar .seg{flex:1;height:4px;border-radius:99px;background:var(--line);}
+.stepbar .seg.on{background:var(--brand);}
+
+.backrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.backrow button{background:none;border:none;color:var(--brand-dark);font-weight:600;font-size:13px;cursor:pointer;padding:0;}
+.backrow button:hover{color:var(--brand);}
+
+.kw-card{
+  border:1px solid var(--line-strong);border-radius:var(--radius);background:#fff;
+  padding:16px 18px;margin-bottom:14px;cursor:pointer;
+}
+.kw-card:hover{border-color:var(--brand);}
+.kw-card.open{border-color:var(--brand);border-width:2px;}
+.kw-card .kw-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.kw-card h3{margin:0;font-size:16px;color:var(--brand-dark);line-height:1.4;}
+.kw-card .chev{flex:0 0 auto;color:var(--brand);font-size:14px;transition:transform .2s ease;}
+.kw-card.open .chev{transform:rotate(180deg);}
+.kw-card p{margin:8px 0 0;font-size:13px;color:var(--ink-soft);}
+
+.sub-wrap{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-strong);display:grid;gap:12px;}
+.sub-card{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);padding:14px 16px;}
+.sub-card .sub-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.sub-card h4{margin:0;font-size:14.5px;color:var(--ink);}
+.sub-card .heart{background:none;border:none;font-size:15px;cursor:pointer;color:var(--line-strong);flex:0 0 auto;}
+.sub-card .heart.on{color:var(--danger);}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--brand-dark);
+  background:var(--brand-tint);border-radius:99px;padding:3px 9px;margin:6px 0 6px;}
+.sub-card p.desc{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft);}
+.sub-card .detail-link{background:none;border:none;color:var(--brand);font-weight:600;font-size:12.5px;cursor:pointer;padding:0;}
+.sub-card .detail-link:hover{color:var(--brand-dark);}
+
+.skeleton{display:grid;gap:10px;}
+.skeleton .bar{height:14px;background:linear-gradient(90deg,var(--line) 25%,var(--paper-deep) 37%,var(--line) 63%);
+  background-size:400% 100%;animation:shimmer 1.4s infinite;border-radius:3px;}
+@keyframes shimmer{0%{background-position:100% 0;}100%{background-position:0 0;}}
+
+.detail-card{border:1px solid var(--line-strong);border-radius:var(--radius);background:#fff;padding:24px clamp(18px,3vw,30px);}
+.detail-card .badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--brand-dark);
+  background:var(--brand-tint);border-radius:99px;padding:4px 12px;margin-bottom:10px;}
+.detail-card h2{margin:0 0 20px;font-size:22px;line-height:1.4;color:var(--brand-dark);}
+.detail-sec{margin-bottom:18px;}
+.detail-sec .lbl{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--brand-dark);margin-bottom:6px;}
+.detail-sec .box{font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;}
+.detail-sec .box.principle{background:var(--accent-tint);border-color:var(--accent);font-weight:600;}
+.imgbox{
+  border:1px dashed var(--line-strong);border-radius:var(--radius);background:var(--paper-deep);
+  aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:var(--ink-soft);font-size:12.5px;margin-bottom:18px;
+}
+.grade-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);}
+.detail-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.detail-actions .btn{width:auto;flex:1;min-width:150px;}
+
+footer.site{text-align:center;padding:26px 16px 40px;color:var(--ink-soft);font-size:12px;border-top:1px solid var(--line);}
+
+@media print{
+  header.site,.backrow,.detail-actions,.stepbar{display:none !important;}
+  main{max-width:100%;padding:0 24px;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wordmark">
+    <div class="left">
+      <div class="mark">별내</div>
+      <div class="names">
+        <span class="center-name">레고에듀케이션 별내스마트러닝센터</span>
+        <span class="lab-name">STEAMedu invention note</span>
+      </div>
+    </div>
+    <a class="back" href="./index.html">← 작성 템플릿으로 돌아가기</a>
+  </div>
+  <h1>발명 아이디어 생성기</h1>
+  <p class="sub">관심사를 고르면 AI가 발명 키워드부터 상세 설계까지 단계적으로 제안해요</p>
+</header>
+
+<main>
+
+  <!-- VIEW 1: 키워드 선택 -->
+  <section class="view active" id="view-select">
+    <div class="stepbar"><div class="seg on"></div><div class="seg"></div><div class="seg"></div></div>
+    <div class="hero">
+      <h2>어떤 세상을 <span class="accent-word">발명</span>해볼까요?</h2>
+      <p>학년과 관심사를 선택하면 멋진 아이디어를 추천해 드려요.</p>
+    </div>
+
+    <div class="field-block">
+      <label>🎓 나의 학년</label>
+      <select id="gradeSelect">
+        <option value="">학년 선택</option>
+        <option>유치원</option>
+        <option>초등학교 (저학년)</option>
+        <option>초등학교 (고학년)</option>
+        <option>중학교</option>
+      </select>
+    </div>
+
+    <div class="field-block">
+      <label>📚 관심 카테고리 <span class="cat-hint">(최대 3개)</span></label>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+
+    <div class="field-block">
+      <label>✏️ 직접 키워드 입력 <span class="cat-hint">(선택)</span></label>
+      <input type="text" id="customKeyword" placeholder="예: 휠체어 전용 우산, 친환경 연필 등">
+    </div>
+
+    <div class="notice" id="selectNotice">⚠ 관심 카테고리를 선택하거나 키워드를 입력해 주세요.</div>
+    <button class="btn" id="btnMakeKeywords" disabled>✨ 발명 키워드 만들기</button>
+  </section>
+
+  <!-- VIEW 2: 추천 키워드 + 하위 아이디어 -->
+  <section class="view" id="view-keywords">
+    <div class="stepbar"><div class="seg on"></div><div class="seg on"></div><div class="seg"></div></div>
+    <div class="backrow"><button id="backToSelect">← 조건 다시 선택</button></div>
+    <div class="hero" style="margin-bottom:18px;">
+      <h2 style="font-size:22px;">추천 발명 키워드</h2>
+      <p>키워드를 클릭해 구체적인 아이디어를 확인해보세요.</p>
+    </div>
+    <div id="kwList"></div>
+  </section>
+
+  <!-- VIEW 3: 상세보기 -->
+  <section class="view" id="view-detail">
+    <div class="backrow">
+      <button id="backToKeywords">← 목록으로</button>
+      <button class="btn small ghost" id="btnPdf">📄 PDF 다운로드</button>
+    </div>
+    <div id="detailContent"></div>
+  </section>
+
+</main>
+
+<footer class="site">레고에듀케이션 별내스마트러닝센터 · 발명 아이디어 생성기</footer>
+
+<script>
+(function(){
+  // =====================================================================
+  // AI 연동 설정 — 지금은 API 키가 없어 화면 흐름 확인용 예시 데이터를 씁니다.
+  // 나중에 직접 연결할 때는 아래 AI_CONFIG를 채우고, callAI() 안의
+  // "TODO" 표시된 부분을 실제 API 호출 코드로 바꿔주세요.
+  //
+  // - Google Gemini(원본과 동일)로 연결하려면:
+  //   https://ai.google.dev/gemini-api/docs 문서의 generateContent 요청을
+  //   callAI() 안에서 fetch로 호출하고, 응답 텍스트를 JSON.parse 하면 됩니다.
+  // - Anthropic(Claude) API로 연결하려면 messages.create 형태의 요청을
+  //   보내는 서버(또는 프록시)를 하나 만들어 그 주소를 아래 endpoint에
+  //   넣어주세요. 브라우저에서 Anthropic API를 직접 호출하는 것은
+  //   CORS로 막혀 있어서, 최소한의 프록시 서버가 하나 필요합니다.
+  // =====================================================================
+  const AI_CONFIG = {
+    provider: "",      // "gemini" | "claude" — 나중에 채워주세요
+    apiKey: "",         // 발급받은 API 키를 여기에 넣으세요 (또는 프록시 주소)
+    endpoint: ""         // 직접 호출할 API 주소 (프록시를 쓴다면 그 주소)
+  };
+
+  async function callAI(taskType, payload){
+    if(!AI_CONFIG.apiKey){
+      // ---- TODO: 여기를 실제 API 호출로 교체하세요 ----
+      // 아래는 화면 흐름 테스트용 예시 데이터입니다.
+      await wait(650 + Math.random()*500);
+      return mockResponse(taskType, payload);
+    }
+    // ---- TODO: AI_CONFIG.apiKey가 채워지면 아래에 실제 fetch 호출을 작성하세요 ----
+    // const res = await fetch(AI_CONFIG.endpoint, { method:'POST', headers:{...}, body: JSON.stringify({taskType, payload}) });
+    // const data = await res.json();
+    // return data;
+    return mockResponse(taskType, payload);
+  }
+  function wait(ms){ return new Promise(r=> setTimeout(r, ms)); }
+
+  function mockResponse(taskType, payload){
+    if(taskType === "keywords"){
+      const base = (payload.categories[0] || payload.custom || "생활");
+      return {
+        keywords: [
+          {
+            id:"k1",
+            title:`${base} 속 불편을 줄이는 손잡이형 도우미 도구`,
+            desc:`${base} 관련 활동에서 힘이 부족하거나 손이 닿지 않아 겪는 불편을, 지렛대 원리를 활용한 손잡이 도구로 쉽게 해결하는 아이디어`
+          },
+          {
+            id:"k2",
+            title:`${base}용 미끄럼 방지 자동 고정 장치`,
+            desc:`${base} 상황에서 물건이 미끄러지거나 흔들려 생기는 문제를, 마찰력을 높이는 고정 장치로 해결하는 아이디어`
+          },
+          {
+            id:"k3",
+            title:`${base} 정리를 도와주는 원터치 수납 장치`,
+            desc:`${base}와 관련된 물건이 흩어지고 정리가 어려운 문제를, 한 번의 동작으로 정리되는 장치로 해결하는 아이디어`
+          }
+        ]
+      };
+    }
+    if(taskType === "subideas"){
+      const t = payload.parentTitle;
+      return {
+        subideas:[
+          { id:"s1", title:`원터치 레버를 적용한 ${payload.grade||''} 맞춤형 안전 손잡이`, core:"CORE CONCEPT", desc:`${t}의 핵심 기능에 지렛대 구조를 더해, 작은 힘으로도 안정적으로 작동하도록 만든 형태` },
+          { id:"s2", title:`스프링 연동형 자동 복원 고정 장치`, core:"CORE CONCEPT", desc:`힘을 주는 동안만 고정되고 손을 떼면 원래 상태로 돌아오는, 스프링 탄성을 활용한 형태` },
+          { id:"s3", title:`회전 캠 구조를 적용한 압착 고정 도구`, core:"CORE CONCEPT", desc:`캠을 돌려 압력을 조절할 수 있어 다양한 두께나 크기에 맞출 수 있는 형태` }
+        ]
+      };
+    }
+    if(taskType === "detail"){
+      const t = payload.title;
+      return {
+        title:t,
+        concept:`이 발명품은 기존 방식이 가진 힘 조절의 어려움과 미끄러짐 문제를 해결하기 위해 만들어졌습니다. 지렛대와 마찰력의 원리를 결합해, 작은 힘으로도 안정적인 결과를 얻을 수 있도록 설계했습니다.`,
+        principle:`지레의 원리(힘점·받침점·작용점)와 마찰력 — 수직항력이 커질수록 최대 정지 마찰력도 커지는 비례 관계`,
+        mechanism:`1. 손잡이 부분을 아래로 젖히면 지렛대 구조에 의해 반대쪽 끝에서 힘이 커집니다. 2. 커진 힘이 접촉면을 눌러 마찰력을 높입니다. 3. 물체가 고정되어 흔들리거나 미끄러지지 않습니다. 4. 손잡이를 원래대로 올리면 힘이 풀리며 고정이 해제됩니다.`,
+        grade: payload.grade || "초등학교 (고학년)"
+      };
+    }
+    return {};
+  }
+
+  // ---------- state ----------
+  const CATEGORIES = [
+    ["가정/가구","🏠"],["전자기기","💻"],["생활/안전","🛡️"],
+    ["학교/교육","🏫"],["식사/주방","🍽️"],["의류/패션","👕"],
+    ["교통/이동","🚲"],["환경/에너지","🌱"],["취미/여가","🎨"],
+    ["헬스/건강","🩺"],["반려동물","🐾"],["식물/정원","🌻"],
+    ["노인/복지","🧓"],["캠핑/야외","🏕️"],["위생/청결","🫧"],
+    ["수면/휴식","💤"],["여행/관광","✈️"],["재난/구호","🆘"],
+    ["스포츠/운동","⚽"],["우주/과학","🚀"]
+  ];
+  const state = { grade:"", categories:[], custom:"", keywords:[], openKeywordId:null, subideasByKw:{} };
+
+  // ---------- render category grid ----------
+  const catGrid = document.getElementById('catGrid');
+  CATEGORIES.forEach(([label,emoji])=>{
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.innerHTML = `<span class="emoji">${emoji}</span><span class="label">${label}</span>`;
+    div.addEventListener('click', ()=>{
+      const idx = state.categories.indexOf(label);
+      if(idx>-1){
+        state.categories.splice(idx,1);
+        div.classList.remove('selected');
+      }else{
+        if(state.categories.length>=3) return;
+        state.categories.push(label);
+        div.classList.add('selected');
+      }
+      refreshCatLimits();
+      refreshMakeButton();
+    });
+    catGrid.appendChild(div);
+  });
+  function refreshCatLimits(){
+    const full = state.categories.length>=3;
+    Array.from(catGrid.children).forEach(el=>{
+      const isSel = el.classList.contains('selected');
+      el.classList.toggle('disabled', full && !isSel);
+    });
+  }
+  document.getElementById('gradeSelect').addEventListener('change', e=>{
+    state.grade = e.target.value; refreshMakeButton();
+  });
+  document.getElementById('customKeyword').addEventListener('input', e=>{
+    state.custom = e.target.value.trim(); refreshMakeButton();
+  });
+  function refreshMakeButton(){
+    const ok = state.categories.length>0 || state.custom.length>0;
+    document.getElementById('btnMakeKeywords').disabled = !ok;
+    document.getElementById('selectNotice').classList.toggle('show', false);
+  }
+
+  // ---------- view switching ----------
+  function showView(id){
+    document.querySelectorAll('.view').forEach(v=> v.classList.toggle('active', v.id===id));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  // ---------- step 1 -> 2 ----------
+  document.getElementById('btnMakeKeywords').addEventListener('click', async ()=>{
+    const btn = document.getElementById('btnMakeKeywords');
+    btn.disabled = true; btn.textContent = '아이디어를 만드는 중...';
+    showView('view-keywords');
+    renderKeywordSkeleton();
+    const res = await callAI("keywords", { grade:state.grade, categories:state.categories, custom:state.custom });
+    state.keywords = res.keywords;
+    state.openKeywordId = null;
+    state.subideasByKw = {};
+    renderKeywordList();
+    btn.disabled = false; btn.textContent = '✨ 발명 키워드 만들기';
+  });
+  document.getElementById('backToSelect').addEventListener('click', ()=> showView('view-select'));
+  document.getElementById('backToKeywords').addEventListener('click', ()=> showView('view-keywords'));
+
+  function renderKeywordSkeleton(){
+    const list = document.getElementById('kwList');
+    list.innerHTML = '';
+    for(let i=0;i<3;i++){
+      const d = document.createElement('div');
+      d.className = 'kw-card';
+      d.innerHTML = `<div class="skeleton"><div class="bar" style="width:70%"></div><div class="bar" style="width:100%"></div><div class="bar" style="width:90%"></div></div>`;
+      list.appendChild(d);
+    }
+  }
+
+  function renderKeywordList(){
+    const list = document.getElementById('kwList');
+    list.innerHTML = '';
+    state.keywords.forEach(kw=>{
+      const card = document.createElement('div');
+      card.className = 'kw-card' + (state.openKeywordId===kw.id ? ' open':'');
+      card.innerHTML = `
+        <div class="kw-head">
+          <h3>${kw.title}</h3>
+          <span class="chev">⌄</span>
+        </div>
+        <p>${kw.desc}</p>
+        <div class="sub-wrap" style="display:${state.openKeywordId===kw.id?'grid':'none'}"></div>
+      `;
+      card.querySelector('.kw-head').addEventListener('click', ()=> toggleKeyword(kw));
+      list.appendChild(card);
+      if(state.openKeywordId===kw.id){
+        renderSubIdeas(card.querySelector('.sub-wrap'), kw);
+      }
+    });
+  }
+
+  async function toggleKeyword(kw){
+    if(state.openKeywordId === kw.id){
+      state.openKeywordId = null;
+      renderKeywordList();
+      return;
+    }
+    state.openKeywordId = kw.id;
+    renderKeywordList();
+    if(!state.subideasByKw[kw.id]){
+      const wrap = document.querySelector('.kw-card.open .sub-wrap');
+      wrap.innerHTML = `<div class="skeleton"><div class="bar" style="width:60%"></div><div class="bar" style="width:95%"></div></div>`;
+      const res = await callAI("subideas", { parentTitle:kw.title, grade:state.grade });
+      state.subideasByKw[kw.id] = res.subideas;
+      if(state.openKeywordId === kw.id) renderKeywordList();
+    }
+  }
+
+  function renderSubIdeas(wrap, kw){
+    const subs = state.subideasByKw[kw.id];
+    if(!subs){ return; }
+    wrap.innerHTML = '';
+    subs.forEach(s=>{
+      const el = document.createElement('div');
+      el.className = 'sub-card';
+      el.innerHTML = `
+        <div class="sub-head">
+          <h4>${s.title}</h4>
+          <button class="heart" type="button">♥</button>
+        </div>
+        <span class="tag">${s.core}</span>
+        <p class="desc">${s.desc}</p>
+        <button class="detail-link" type="button">상세보기 및 AI 이미지 생성 ›</button>
+      `;
+      el.querySelector('.heart').addEventListener('click', (e)=> e.currentTarget.classList.toggle('on'));
+      el.querySelector('.detail-link').addEventListener('click', ()=> openDetail(s));
+      wrap.appendChild(el);
+    });
+  }
+
+  // ---------- step 3: 상세보기 ----------
+  async function openDetail(subIdea){
+    showView('view-detail');
+    const box = document.getElementById('detailContent');
+    box.innerHTML = `<div class="detail-card"><div class="skeleton">
+      <div class="bar" style="width:50%"></div><div class="bar" style="width:100%"></div>
+      <div class="bar" style="width:90%"></div><div class="bar" style="width:80%"></div>
+    </div></div>`;
+    const d = await callAI("detail", { title:subIdea.title, grade:state.grade });
+    box.innerHTML = `
+      <div class="detail-card">
+        <span class="badge">IDEA DETAILS</span>
+        <h2>${d.title}</h2>
+
+        <div class="imgbox" id="imgbox">
+          <span>🖼️ AI 생성 이미지가 이 자리에 표시됩니다</span>
+          <button class="btn small ghost" id="btnGenImg" type="button">이미지 생성</button>
+        </div>
+
+        <div class="detail-sec">
+          <div class="lbl">💡 핵심 컨셉 및 목적</div>
+          <div class="box">${d.concept}</div>
+        </div>
+        <div class="detail-sec">
+          <div class="lbl">⊛ 적용 과학 원리</div>
+          <div class="box principle">${d.principle}</div>
+        </div>
+        <div class="detail-sec">
+          <div class="lbl">⚙ 시스템 메커니즘</div>
+          <div class="box">${d.mechanism}</div>
+        </div>
+        <div class="grade-chip">🎓 TARGET GRADE · ${d.grade}</div>
+      </div>
+    `;
+    document.getElementById('btnGenImg').addEventListener('click', (e)=>{
+      // ---- TODO: 여기에 실제 이미지 생성 API 호출을 연결하세요 ----
+      e.target.textContent = '생성 중...';
+      setTimeout(()=>{ e.target.textContent = '이미지 생성 (예시 미연결)'; }, 700);
+    });
+  }
+
+  document.getElementById('btnPdf').addEventListener('click', ()=> window.print());
+
+  showView('view-select');
+})();
+</script>
+</body>
+</html>
