@@ -55,14 +55,10 @@ header.site{
   gap:12px;
   margin-bottom:18px;
 }
-.wordmark .mark{
-  width:42px;height:42px;flex:0 0 auto;
-  border-radius:50%;
-  background:var(--accent);
-  color:var(--brand-dark);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:15px;font-family:'Space Grotesk',sans-serif;
-  border:2px solid #F4F1E6;
+.wordmark .logo-img{
+  height:44px;width:auto;flex:0 0 auto;
+  background:#fff;padding:6px 12px;border-radius:8px;
+  display:block;
 }
 .wordmark .names{display:flex;flex-direction:column;line-height:1.25;}
 .wordmark .center-name{font-weight:600;font-size:14px;letter-spacing:.02em;color:#DCE9E4;}
@@ -243,7 +239,7 @@ footer.site{
 
 <header class="site">
   <div class="wordmark">
-    <div class="mark">별내</div>
+    <img src="./logo.png" alt="STEAMedu 로고" class="logo-img">
     <div class="names">
       <span class="center-name">레고에듀케이션 별내스마트러닝센터</span>
       <span class="lab-name">STEAMedu invention note</span>
