@@ -259,10 +259,24 @@ footer.site{text-align:center;padding:26px 16px 40px;color:var(--ink-soft);font-
   // =====================================================================
   const AI_CONFIG = {
     // 👇 여기에 aistudio.google.com/apikey 에서 발급받은 Gemini API 키를 붙여넣으세요.
-    apiKey: "AQ.Ab8RN6LtFhC_8RUv3gf7Ib4jo4IhtWbjB0XyzGblSqbzZHK7Bw",
-    textModel: "gemini-flash-latest",        // 키워드/아이디어/상세 설명용 텍스트 모델
+    apiKey: "",
+    textModel: "gemini-flash-latest",     // 키워드/아이디어/상세 설명용 텍스트 모델 (항상 최신 버전을 가리키는 별칭)
     imageModel: "gemini-2.5-flash-image"  // 컨셉 아트 이미지 생성용 모델 ("Nano Banana")
   };
+
+  // 503(서버 일시 과부하) · 429(요청 과다)처럼 다시 시도하면 성공할 가능성이 높은 오류는
+  // 짧게 기다렸다가 최대 2번까지 자동으로 재시도합니다.
+  async function fetchWithRetry(url, options, retries = 2){
+    for(let attempt = 0; ; attempt++){
+      const res = await fetch(url, options);
+      if(res.ok) return res;
+      const retryable = res.status === 503 || res.status === 429 || res.status === 500;
+      if(!retryable || attempt >= retries){
+        throw new Error(`Gemini API 오류 (${res.status})`);
+      }
+      await wait(800 * Math.pow(2, attempt)); // 0.8s, 1.6s ...
+    }
+  }
 
   async function callGeminiText(prompt){
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_CONFIG.textModel}:generateContent?key=${AI_CONFIG.apiKey}`;
@@ -270,8 +284,7 @@ footer.site{text-align:center;padding:26px 16px 40px;color:var(--ink-soft);font-
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { responseMimeType: "application/json" }
     };
-    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if(!res.ok) throw new Error(`Gemini API 오류 (${res.status})`);
+    const res = await fetchWithRetry(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const data = await res.json();
     let text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     text = text.replace(/^```json\s*|```$/g, '').trim();
@@ -281,8 +294,7 @@ footer.site{text-align:center;padding:26px 16px 40px;color:var(--ink-soft);font-
   async function callGeminiImage(prompt){
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_CONFIG.imageModel}:generateContent?key=${AI_CONFIG.apiKey}`;
     const body = { contents: [{ parts: [{ text: prompt }] }] };
-    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if(!res.ok) throw new Error(`Gemini 이미지 API 오류 (${res.status})`);
+    const res = await fetchWithRetry(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const data = await res.json();
     const parts = data?.candidates?.[0]?.content?.parts || [];
     const imgPart = parts.find(p=> p.inlineData);
